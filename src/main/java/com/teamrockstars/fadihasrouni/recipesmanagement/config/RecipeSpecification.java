@@ -1,8 +1,10 @@
 package com.teamrockstars.fadihasrouni.recipesmanagement.config;
 
 import com.teamrockstars.fadihasrouni.recipesmanagement.enums.DietaryType;
+import com.teamrockstars.fadihasrouni.recipesmanagement.model.Ingredient;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.Recipe;
-import jakarta.persistence.criteria.JoinType;
+import com.teamrockstars.fadihasrouni.recipesmanagement.model.RecipeIngredient;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 public class RecipeSpecification {
@@ -46,8 +48,16 @@ public class RecipeSpecification {
             return null;
         }
         return (root, query, criteriaBuilder) -> {
-            root.join("recipeIngredients", JoinType.INNER);
-            return criteriaBuilder.like(root.get("recipeIngredients").get("ingredient").get("name"), "%" + ingredientExcludes + "%").not();
+            // Subquery to find recipe IDs that contain the ingredient
+            Subquery<Long> subquery = query.subquery(Long.class);
+            Root<RecipeIngredient> recipeIngredientRoot = subquery.from(RecipeIngredient.class);
+            Join<RecipeIngredient, Ingredient> ingredientJoin = recipeIngredientRoot.join("ingredient");
+
+            subquery.select(recipeIngredientRoot.get("recipe").get("id"))
+                    .where(criteriaBuilder.like(ingredientJoin.get("name"), "%" + ingredientExcludes + "%"));
+
+            // Main query to exclude those recipes
+            return criteriaBuilder.not(root.get("id").in(subquery));
         };
     }
 }

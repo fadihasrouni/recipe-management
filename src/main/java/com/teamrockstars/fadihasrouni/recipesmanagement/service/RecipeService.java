@@ -39,7 +39,6 @@ public class RecipeService {
      */
     public List<RecipeResponse> getRecipes(Integer numberOfServings, String dietaryType, String instructionsInclude,
                                            String ingredientIncludes, String ingredientExcludes) {
-        ;
         List<Recipe> recipes = recipeRepository.findAll(
                 Specification.where(RecipeSpecification.byNumberOfServings(numberOfServings))
                         .and(RecipeSpecification.byDietaryType(dietaryType))
@@ -72,8 +71,6 @@ public class RecipeService {
     @Transactional
     public RecipeResponse createRecipe(RecipeRequest recipeRequest) {
         Recipe recipe = populateRecipeModel(recipeRequest, new Recipe());
-        // Validate if the recipe is vegan/what is says
-        // ImplementSome logic
 
         recipe = recipeRepository.save(recipe);
 

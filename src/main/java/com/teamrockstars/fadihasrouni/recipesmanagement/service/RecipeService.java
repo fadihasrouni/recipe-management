@@ -9,6 +9,8 @@ import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeReposit
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import java.util.List;
 
 @Service
 public class RecipeService {
+
+    Logger log = LoggerFactory.getLogger(RecipeService.class);
 
     private final RecipeRepository recipeRepository;
 
@@ -72,9 +76,10 @@ public class RecipeService {
     public RecipeResponse createRecipe(RecipeRequest recipeRequest) {
         Recipe recipe = populateRecipeModel(recipeRequest, new Recipe());
 
+        log.info("Creating a new recipe");
         recipe = recipeRepository.save(recipe);
 
-        // Populate the recipe ingredients
+        log.info("Creating recipe ingredient");
         recipe.setRecipeIngredients(
                 recipeIngredientRepository.saveAll(populateRecipeIngredientList(recipeRequest.getIngredients(), recipe.getId())));
 
@@ -95,9 +100,10 @@ public class RecipeService {
 
         populateRecipeModel(recipeRequest, recipe);
 
+        log.info("updating recipe with id {}", recipe.getId());
         recipeRepository.save(recipe);
 
-        // Populate the recipe ingredients
+        log.info("updating recipe ingredient");
         recipe.setRecipeIngredients(
                 recipeIngredientRepository.saveAll(populateRecipeIngredientList(recipeRequest.getIngredients(), recipe.getId())));
 
@@ -122,7 +128,10 @@ public class RecipeService {
      */
     private Recipe findRecipeByIdOrThrow(Long id) {
         return recipeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Couldn't find any recipe with the given id"));
+                .orElseThrow(() -> {
+                    log.error("Recipe with id " + id + " not found");
+                    return  new ResourceNotFoundException("Couldn't find any recipe with the given id");
+                });
     }
 
     /**

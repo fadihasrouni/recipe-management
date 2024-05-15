@@ -9,6 +9,7 @@ The Spring Boot project follows a layered architecture in which there are 3 main
 - MySQL is used to store all the data. A Docker container is used to run the MySQL database instance.
 - The project includes unit tests and integration tests
 - Java 17 is being used.
+- Sample data are also added: ingredients and unit, they are prepopulated from data.sql file 
 
 ## Features
 
@@ -74,7 +75,7 @@ The API is documented using the OpenAPI Specification. You can access the API do
 
 
 ### Creating a recioe example payload:
-You can also use this payload to update the recipe
+You can also use this payload to update the recipe. For ingredient selection please use the ingredients endpoints to get or create new ingredient.
 
 ```json
 {
@@ -103,4 +104,3 @@ You can also use this payload to update the recipe
   "instructions": "1- put oil in a pan 2- saute the mushrooms 3- add chicken and cook for 15 mins"
 }
 ```
-

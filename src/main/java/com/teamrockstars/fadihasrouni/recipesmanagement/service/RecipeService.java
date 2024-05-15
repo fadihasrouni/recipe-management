@@ -31,9 +31,10 @@ public class RecipeService {
     EntityManager entityManager;
 
     @Autowired
-    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository recipeIngredientRepository) {
+    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository recipeIngredientRepository, EntityManager entityManager) {
         this.recipeRepository = recipeRepository;
         this.recipeIngredientRepository = recipeIngredientRepository;
+        this.entityManager = entityManager;
     }
 
     /**

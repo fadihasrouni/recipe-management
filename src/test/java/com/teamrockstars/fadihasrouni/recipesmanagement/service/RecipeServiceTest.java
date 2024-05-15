@@ -2,10 +2,15 @@ package com.teamrockstars.fadihasrouni.recipesmanagement.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
 import com.teamrockstars.fadihasrouni.recipesmanagement.enums.DietaryType;
 import com.teamrockstars.fadihasrouni.recipesmanagement.exception.customException.ResourceNotFoundException;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.*;
+import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeIngredientRepository;
 import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +34,14 @@ public class RecipeServiceTest {
     @Mock
     private RecipeRepository recipeRepository;
 
+    @Mock
+    private RecipeIngredientRepository recipeIngredientRepository;
+
+    @Mock
+    private EntityManager entityManager;
+
     Recipe recipe;
+    List<RecipeIngredient> recipeIngredients = new ArrayList<>();
     List<Recipe> recipes = new ArrayList<>();
     List<Ingredient> ingredients = new ArrayList<>();
     List<Unit> units = new ArrayList<>();
@@ -55,7 +67,7 @@ public class RecipeServiceTest {
         units.add(new Unit(6L, "Kilogram"));
 
         // Prepare recipe ingredients
-        List<RecipeIngredient> recipeIngredients = new ArrayList<>();
+        recipeIngredients = new ArrayList<>();
 
         recipeIngredients.add(new RecipeIngredient(1L, recipe, ingredients.get(0), units.get(0), 3));
         recipeIngredients.add(new RecipeIngredient(2L, recipe, ingredients.get(1), units.get(0), 2));
@@ -64,10 +76,10 @@ public class RecipeServiceTest {
         recipes.add(recipe);
 
         Recipe recipe2 = returnMockedRecipe(2L, "Pasta", "Best pasta in town", DietaryType.VEGAN, 4, 15, "1- boil the pasta, 2- mix it and salt and tomato paste", recipeIngredients);
-        recipeIngredients = new ArrayList<>();
 
-        recipeIngredients.add(new RecipeIngredient(3L, recipe2, ingredients.get(2), units.get(3), 4));
-        recipeIngredients.add(new RecipeIngredient(4L, recipe2, ingredients.get(3), units.get(2), 10));
+        List<RecipeIngredient> recipe2Ingredients = new ArrayList<>();
+        recipe2Ingredients.add(new RecipeIngredient(3L, recipe2, ingredients.get(2), units.get(3), 4));
+        recipe2Ingredients.add(new RecipeIngredient(4L, recipe2, ingredients.get(3), units.get(2), 10));
 
         recipes.add(recipe2);
     }
@@ -85,7 +97,7 @@ public class RecipeServiceTest {
 
     @Test
     void testGetRecipeByIdSuccess() {
-        Mockito.when(recipeRepository.findById(Mockito.anyLong())).thenReturn(Optional.ofNullable(recipe));
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.ofNullable(recipe));
 
         RecipeResponse response = recipeService.getRecipeById(recipe.getId());
 
@@ -94,14 +106,83 @@ public class RecipeServiceTest {
 
     @Test
     void testGetRecipeByIdResourceNotFoundFail() {
-        Mockito.when(recipeRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> recipeService.getRecipeById(recipe.getId()));
     }
 
-    // TODO Create recipe test success and failures(if any)
-    // TODO update recipe test success and failures(if any)
-    // TODO delete recipe test success and failures(if any)
+    @Test
+    void testCreateRecipeSuccess() {
+        Mockito.when(recipeRepository.save(Mockito.any(Recipe.class))).thenReturn(recipe);
+        Mockito.when(recipeIngredientRepository.saveAll(Mockito.anyList())).thenReturn(recipeIngredients);
+        lenient().when(entityManager.getReference(Recipe.class, 1)).thenReturn(recipe);
+        lenient().when(entityManager.getReference(Ingredient.class, 1)).thenReturn(ingredients.get(0));
+        lenient().when(entityManager.getReference(Ingredient.class, 2)).thenReturn(ingredients.get(1));
+        lenient().when(entityManager.getReference(Unit.class, 0)).thenReturn(units.get(0));
+
+        List<IngredientItem> ingredients = new ArrayList<>();
+        ingredients.add(new IngredientItem(1L, 1L, 2F));
+        ingredients.add(new IngredientItem(2L, 3L, 10F));
+
+        RecipeResponse response = recipeService.createRecipe(
+                createRecipeRequest("Pizza", "Best Pizza in town", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "1- buy it frozen, 2- put it in the oven", ingredients));
+
+        assertRecipe(recipe, response);
+    }
+
+    @Test
+    void testCreateRecipeRuntimeExceptionFailure() {
+        Mockito.when(recipeRepository.save(Mockito.any(Recipe.class))).thenThrow(new RuntimeException("Test Exception"));
+
+        assertThrows(RuntimeException.class, () ->
+                recipeService.createRecipe(createRecipeRequest("Pizza", "Best Pizza in town", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "1- buy it frozen, 2- put it in the oven", new ArrayList<>()))
+        );
+    }
+
+    @Test
+    void testUpdateRecipeSuccess() {
+        Mockito.when(recipeRepository.findById(Mockito.anyLong())).thenReturn(Optional.ofNullable(recipe));
+        Mockito.when(recipeRepository.save(Mockito.any(Recipe.class))).thenReturn(recipe);
+        Mockito.when(recipeIngredientRepository.saveAll(Mockito.anyList())).thenReturn(recipeIngredients);
+
+        lenient().when(entityManager.getReference(Recipe.class, 1)).thenReturn(recipe);
+        lenient().when(entityManager.getReference(Ingredient.class, 1)).thenReturn(ingredients.get(0));
+        lenient().when(entityManager.getReference(Ingredient.class, 2)).thenReturn(ingredients.get(1));
+        lenient().when(entityManager.getReference(Unit.class, 0)).thenReturn(units.get(0));
+
+        List<IngredientItem> ingredients = new ArrayList<>();
+        ingredients.add(new IngredientItem(1L, 1L, 2F));
+        ingredients.add(new IngredientItem(2L, 3L, 10F));
+
+        RecipeResponse response = recipeService.updateRecipe(1L,
+                createRecipeRequest("Pizza update", "Best Pizza in town update", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "1- buy it frozen, 2- put it in the oven", ingredients));
+
+        verify(recipeIngredientRepository, times(1)).deleteAllInBatch(anyList());
+        assertRecipe(recipe, response);
+    }
+
+    @Test
+    void testUpdateRecipeNotFoundFailure() {
+        Mockito.when(recipeRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> recipeService.updateRecipe(1L,
+                createRecipeRequest("Pizza update", "Best Pizza in town update", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "1- buy it frozen, 2- put it in the oven", new ArrayList<>())));
+    }
+
+    @Test
+    void testDeleteRecipeSuccess() {
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.ofNullable(recipe));
+
+        recipeService.deleteRecipe(1L);
+        verify(recipeRepository, times(1)).delete(any(Recipe.class));
+    }
+
+    @Test
+    void testDeleteRecipeFailure() {
+        Mockito.when(recipeRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> recipeService.deleteRecipe(1L));
+    }
 
     /**
      * Asserts that the recipe model field values and correctly mapped to the recipe response
@@ -109,7 +190,7 @@ public class RecipeServiceTest {
      * @param expectedRecipe
      * @param actualRecipe
      */
-    private void assertRecipe(Recipe expectedRecipe, RecipeResponse actualRecipe){
+    private void assertRecipe(Recipe expectedRecipe, RecipeResponse actualRecipe) {
         assertEquals(expectedRecipe.getId(), actualRecipe.getId());
         assertEquals(expectedRecipe.getName(), actualRecipe.getName());
         assertEquals(expectedRecipe.getDescription(), actualRecipe.getDescription());
@@ -128,6 +209,22 @@ public class RecipeServiceTest {
             assertEquals(expectedRecipe.getRecipeIngredients().get(i).getUnit().getName(), actualRecipe.getIngredients().get(i).getUnit());
         }
 
+    }
+
+    private RecipeRequest createRecipeRequest(String name, String description, RecipeRequest.DietaryTypeEnum dietaryType,
+                                              int numberOfServings, int prepTimeMinutes, String instructions, List<IngredientItem> recipeIngredients) {
+
+        RecipeRequest recipeRequest = new RecipeRequest();
+
+        recipeRequest.setName(name);
+        recipeRequest.setDescription(description);
+        recipeRequest.setDietaryType(dietaryType);
+        recipeRequest.setNumberOfServings(numberOfServings);
+        recipeRequest.setPrepTimeMinutes(prepTimeMinutes);
+        recipeRequest.setInstructions(instructions);
+        recipeRequest.setIngredients(recipeIngredients);
+
+        return recipeRequest;
     }
 
     /**

@@ -97,13 +97,18 @@ public class RecipeService {
     @Transactional
     public RecipeResponse updateRecipe(Long id, RecipeRequest recipeRequest) {
         Recipe recipe = findRecipeByIdOrThrow(id);
-
         populateRecipeModel(recipeRequest, recipe);
 
-        log.info("updating recipe with id {}", recipe.getId());
-        recipeRepository.save(recipe);
+        // Removing existing recipe ingredients to create new updated ingredients
+        log.info("deleting recipe ingredients");
+        if (recipe.getRecipeIngredients() != null && !recipe.getRecipeIngredients().isEmpty()) {
+            recipeIngredientRepository.deleteAllInBatch(recipe.getRecipeIngredients());
+        }
 
-        log.info("updating recipe ingredient");
+        log.info("updating recipe with id {}", recipe.getId());
+        recipe = recipeRepository.save(recipe);
+
+        log.info("adding updated recipe ingredients");
         recipe.setRecipeIngredients(
                 recipeIngredientRepository.saveAll(populateRecipeIngredientList(recipeRequest.getIngredients(), recipe.getId())));
 
@@ -181,7 +186,7 @@ public class RecipeService {
 
         recipeIngredient.setRecipe(entityManager.getReference(Recipe.class, recipeId));
         recipeIngredient.setIngredient(entityManager.getReference(Ingredient.class, ingredientItem.getIngredientId()));
-        recipeIngredient.setUnit(entityManager.getReference(Unit.class, ingredientItem.getIngredientId()));
+        recipeIngredient.setUnit(entityManager.getReference(Unit.class, ingredientItem.getUnitId()));
         recipeIngredient.setQuantity(ingredientItem.getQuantity());
 
         return recipeIngredient;

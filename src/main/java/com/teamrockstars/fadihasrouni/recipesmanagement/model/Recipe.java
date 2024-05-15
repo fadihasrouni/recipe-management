@@ -37,7 +37,7 @@ public class Recipe {
     @Column(columnDefinition="LONGTEXT")
     private String instructions;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 
     @JsonIgnore

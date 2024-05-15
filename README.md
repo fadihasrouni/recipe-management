@@ -73,3 +73,34 @@ The project consists of the API and a MYSQL database. To be able to run them bot
 The API is documented using the OpenAPI Specification. You can access the API documentation in Swagger UI by visiting  [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) after starting the application, it has all the details needed to get started with a sample request.
 
 
+### Creating a recioe example payload:
+You can also use this payload to update the recipe
+
+```json
+{
+  "name": "Mushroom chicken",
+  "description": "This homemade mushroom chicken that is so tasty and deserves a try!",
+  "dietaryType": "NON_VEGETARIAN",
+  "numberOfServings": 2,
+  "prepTimeMinutes": 20,
+  "ingredients": [
+    {
+      "ingredientId": 5,
+      "unitId": 6,
+      "quantity": 1
+    },
+    {
+      "ingredientId": 16,
+      "unitId": 5,
+      "quantity": 100
+    },
+    {
+      "ingredientId": 13,
+      "unitId": 2,
+      "quantity": 1
+    }
+  ],
+  "instructions": "1- put oil in a pan 2- saute the mushrooms 3- add chicken and cook for 15 mins"
+}
+```
+

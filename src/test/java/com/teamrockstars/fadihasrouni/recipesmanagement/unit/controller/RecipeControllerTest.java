@@ -1,5 +1,6 @@
-package com.teamrockstars.fadihasrouni.recipesmanagement.controller;
+package com.teamrockstars.fadihasrouni.recipesmanagement.unit.controller;
 
+import com.teamrockstars.fadihasrouni.recipesmanagement.controller.RecipeController;
 import com.teamrockstars.fadihasrouni.recipesmanagement.exception.customException.ResourceNotFoundException;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.*;
 import com.teamrockstars.fadihasrouni.recipesmanagement.service.RecipeService;
@@ -46,26 +47,26 @@ public class RecipeControllerTest {
     void getRecipeTestSuccess() throws Exception {
         when(recipeService.getRecipeById(1L)).thenReturn(mockRecipeResponse(1L, "Pasta", "Delicious pasta recipe", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "Boil pasta. Add sauce."));
 
-        assertExpectResponse(mockMvc.perform(get(baseUrl +" /{id}", 1L)));
+        assertExpectResponse(mockMvc.perform(get(baseUrl +"/{id}", 1L)));
     }
 
     @Test
     public void testGetRecipeByIdFailNotFound() throws Exception {
         when(recipeService.getRecipeById(1L)).thenThrow(new ResourceNotFoundException("Couldn't find recipe with id"));
 
-        mockMvc.perform(get(baseUrl +" /{id}", 1L))
+        mockMvc.perform(get(baseUrl +"/{id}", 1L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetRecipeByIdFailInvalidId() throws Exception {
-        mockMvc.perform(get(baseUrl +" /{id}", "invalid-id"))
+        mockMvc.perform(get(baseUrl +"/{id}", "invalid-id"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testDeleteRecipeByIdSuccess () throws Exception {
-        mockMvc.perform(delete(baseUrl +" /{id}", 1L))
+        mockMvc.perform(delete(baseUrl +"/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 
@@ -73,7 +74,7 @@ public class RecipeControllerTest {
     public void testDeleteRecipeByIdFailureNotFound () throws Exception {
         doThrow(new ResourceNotFoundException("Couldn't find recipe with id")).when(recipeService).deleteRecipe(1L);
 
-        mockMvc.perform(delete( baseUrl +" /{id}", 1L))
+        mockMvc.perform(delete( baseUrl +"/{id}", 1L))
                 .andExpect(status().isNotFound());
     }
 

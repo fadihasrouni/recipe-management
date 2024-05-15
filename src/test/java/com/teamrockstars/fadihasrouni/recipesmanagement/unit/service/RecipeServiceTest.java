@@ -1,4 +1,4 @@
-package com.teamrockstars.fadihasrouni.recipesmanagement.service;
+package com.teamrockstars.fadihasrouni.recipesmanagement.unit.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +10,7 @@ import com.teamrockstars.fadihasrouni.recipesmanagement.exception.customExceptio
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.*;
 import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeIngredientRepository;
 import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeRepository;
+import com.teamrockstars.fadihasrouni.recipesmanagement.service.RecipeService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

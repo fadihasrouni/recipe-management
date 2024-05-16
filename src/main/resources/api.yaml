@@ -1,0 +1,313 @@
+openapi: 3.0.3
+info:
+  title: Recipe Management - OpenAPI 3.0
+  version: 1.0.0
+  description: |-
+    This is a Recipe Management API, where users can add, update, delete and fetch different recipes.
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: recipe
+    description: Recipe information
+  - name: ingredient
+    description: ingredient information
+paths:
+  /recipes:
+    get:
+      summary: Gets all the recipes
+      operationId: getRecipes
+      tags:
+        - recipe
+      parameters:
+        - in: query
+          name: numberOfServings
+          schema:
+            type: integer
+        - in: query
+          name: dietaryType
+          schema:
+            type: string
+            enum:
+              - VEGETARIAN
+              - VEGAN
+              - PESCETARIAN
+              - FLEXETARIAN
+              - NON_VEGETARIAN
+        - in: query
+          name: instructionsInclude
+          schema:
+            type: string
+        - in: query
+          name: ingredientIncludes
+          schema:
+            type: string
+        - in: query
+          name: ingredientExcludes
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns all available recipes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecipeResponse"
+    post:
+      summary: Creates a new recipe
+      operationId: createRecipe
+      tags:
+        - recipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeRequest'
+        required: true
+      responses:
+        '201':
+          description: Recipe created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+  /recipes/{id}:
+    get:
+      summary: Gets a specific recipe based on id
+      operationId: getRecipeById
+      tags:
+        - recipe
+      parameters:
+        - name: id
+          in: path
+          description: id of the recipe
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns the available recipe by id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        '404':
+          description: The recipe was not found for the specified id
+    put:
+      summary: Update a specific recipe based on id
+      operationId: updateRecipeById
+      tags:
+        - recipe
+      parameters:
+        - name: id
+          in: path
+          description: id of the recipe
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeRequest'
+        required: true
+      responses:
+        '200':
+          description: Recipe updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeResponse"
+        '404':
+          description: The recipe was not found for the specified id
+    delete:
+      summary: Delete a specific recipe based on id
+      operationId: deleteRecipeById
+      tags:
+        - recipe
+      parameters:
+        - name: id
+          in: path
+          description: id of the recipe
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Recipe deleted.
+        '404':
+          description: The recipe was not found for the specified id
+  /recipes/{id}/vegetarian:
+    get:
+      summary: Check if the dish is vegetarian
+      operationId: isVegetarian
+      tags:
+        - recipe
+      parameters:
+        - name: id
+          in: path
+          description: id of the recipe
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns if the recipe is vegetarian.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VegetarianDishResponse"
+  /ingredients:
+    get:
+      summary: Gets all the the ingredients
+      operationId: getIngredients
+      tags:
+        - ingredient
+      responses:
+        '200':
+          description: Returns all available ingredients.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SimpleIngredientResponse"
+    post:
+      summary: create a new ingredient
+      operationId: createIngredient
+      tags:
+        - ingredient
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngredientRequest'
+        required: true
+      responses:
+        '201':
+          description: Ingredient created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleIngredientResponse"
+
+components:
+  schemas:
+    RecipeRequest:
+      type: object
+      required:
+        - name
+        - dietaryType
+        - instructions
+      properties:
+        name:
+          type: string
+          example: 'Pizza'
+        description:
+          type: string
+          example: 'This homemade pizza dough recipe is great for beginners and yields a soft, chewy crust. Skip delivery because you need just 6 ingredients!'
+        dietaryType:
+          type: string
+          enum:
+            - VEGETARIAN
+            - VEGAN
+            - PESCETARIAN
+            - FLEXETARIAN
+            - NON_VEGETARIAN
+        numberOfServings:
+          type: integer
+          example: 2
+        prepTimeMinutes:
+          type: integer
+          example: 60
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/IngredientItem"
+        instructions:
+          type: string
+          example: |-
+              1- Make the dough and shape it, 
+              2- Spread the tomato sauce
+              3- Add cheese and basil
+              4- Bake for 30 mins
+    IngredientItem:
+      type: object
+      required:
+        - ingredientId
+        - unitId
+        - quantity
+      properties:
+        ingredientId:
+          type: integer
+          format: int64
+          example: 1
+        unitId:
+          type: integer
+          format: int64
+          example: 6
+        quantity:
+          type: number
+          format: float
+          example: 2.5
+    RecipeResponse:
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        dietaryType:
+          type: string
+        numberOfServings:
+          type: integer
+        prepTimeMinutes:
+          type: integer
+        instructions:
+          type: string
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/IngredientResponse"
+    IngredientResponse:
+      properties:
+        quantity:
+          type: number
+          format: float
+        unit:
+          type: string
+        ingredient:
+          type: string
+    SimpleIngredientResponse:
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        # To be supported later adding ingredient type
+    IngredientRequest:
+      properties:
+        name:
+          type: string
+        containsMeat:
+          type: boolean
+          example: false
+        containsSeaFood:
+          type: boolean
+          example: false
+
+    VegetarianDishResponse:
+      properties:
+        isVegetarian:
+          type: boolean
+        message:
+          type: string

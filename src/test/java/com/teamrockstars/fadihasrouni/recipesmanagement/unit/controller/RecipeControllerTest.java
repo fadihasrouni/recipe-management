@@ -17,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -44,37 +45,48 @@ public class RecipeControllerTest {
     }
 
     @Test
+    void getAllRecipesSuccess() throws Exception {
+        when(recipeService.getRecipes(null, null, null, null, null))
+                .thenReturn(mockRecipeResponseList());
+
+        ResultActions resultActions = mockMvc.perform(get(baseUrl));
+        resultActions.andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.*", hasSize(2)));
+    }
+
+    @Test
     void getRecipeTestSuccess() throws Exception {
         when(recipeService.getRecipeById(1L)).thenReturn(mockRecipeResponse(1L, "Pasta", "Delicious pasta recipe", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "Boil pasta. Add sauce."));
 
-        assertExpectResponse(mockMvc.perform(get(baseUrl +"/{id}", 1L)));
+        assertExpectResponse(mockMvc.perform(get(baseUrl + "/{id}", 1L)));
     }
 
     @Test
     public void testGetRecipeByIdFailNotFound() throws Exception {
         when(recipeService.getRecipeById(1L)).thenThrow(new ResourceNotFoundException("Couldn't find recipe with id"));
 
-        mockMvc.perform(get(baseUrl +"/{id}", 1L))
+        mockMvc.perform(get(baseUrl + "/{id}", 1L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetRecipeByIdFailInvalidId() throws Exception {
-        mockMvc.perform(get(baseUrl +"/{id}", "invalid-id"))
+        mockMvc.perform(get(baseUrl + "/{id}", "invalid-id"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void testDeleteRecipeByIdSuccess () throws Exception {
-        mockMvc.perform(delete(baseUrl +"/{id}", 1L))
+    public void testDeleteRecipeByIdSuccess() throws Exception {
+        mockMvc.perform(delete(baseUrl + "/{id}", 1L))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    public void testDeleteRecipeByIdFailureNotFound () throws Exception {
+    public void testDeleteRecipeByIdFailureNotFound() throws Exception {
         doThrow(new ResourceNotFoundException("Couldn't find recipe with id")).when(recipeService).deleteRecipe(1L);
 
-        mockMvc.perform(delete( baseUrl +"/{id}", 1L))
+        mockMvc.perform(delete(baseUrl + "/{id}", 1L))
                 .andExpect(status().isNotFound());
     }
 
@@ -103,6 +115,20 @@ public class RecipeControllerTest {
     }
 
     /**
+     * Mocks a recipe response list
+     *
+     * @return
+     */
+    private List<RecipeResponse> mockRecipeResponseList() {
+        List<RecipeResponse> recipeResponseList = new ArrayList<>();
+
+        recipeResponseList.add(mockRecipeResponse(1L, "Pasta", "Delicious pasta recipe", RecipeRequest.DietaryTypeEnum.VEGAN, 4, 60, "Boil pasta. Add sauce."));
+        recipeResponseList.add(mockRecipeResponse(2L, "Pizza", "Delicious pizza recipe", RecipeRequest.DietaryTypeEnum.VEGETARIAN, 4, 60, "Add pizza in the oven."));
+
+        return recipeResponseList;
+    }
+
+    /**
      * Mock the response returned by the service layer
      *
      * @param id
@@ -115,8 +141,7 @@ public class RecipeControllerTest {
      * @return
      * @throws Exception
      */
-    private RecipeResponse mockRecipeResponse(Long id, String name, String description, RecipeRequest.DietaryTypeEnum dietaryType, int numberOfServings, int preTimeMinutes, String instructions)
-            throws Exception {
+    private RecipeResponse mockRecipeResponse(Long id, String name, String description, RecipeRequest.DietaryTypeEnum dietaryType, int numberOfServings, int preTimeMinutes, String instructions) {
         RecipeResponse recipeResponse = new RecipeResponse();
 
         recipeResponse.setId(id);
@@ -137,7 +162,7 @@ public class RecipeControllerTest {
      * @return
      * @throws Exception
      */
-    private List<IngredientResponse> createRandomIngredients() throws Exception {
+    private List<IngredientResponse> createRandomIngredients() {
         List<IngredientResponse> ingredients = new ArrayList<>();
 
         IngredientResponse ingredient = new IngredientResponse();

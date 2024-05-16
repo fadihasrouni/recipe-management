@@ -31,7 +31,7 @@ paths:
             enum:
               - VEGETARIAN
               - VEGAN
-              - PERSCETARIAN
+              - PESCETARIAN
               - FLEXETARIAN
               - NON_VEGETARIAN
         - in: query
@@ -217,7 +217,7 @@ components:
           enum:
             - VEGETARIAN
             - VEGAN
-            - PERSCETARIAN
+            - PESCETARIAN
             - FLEXETARIAN
             - NON_VEGETARIAN
         numberOfServings:
@@ -298,6 +298,13 @@ components:
       properties:
         name:
           type: string
+        containsMeat:
+          type: boolean
+          example: false
+        containsSeaFood:
+          type: boolean
+          example: false
+
     VegetarianDishResponse:
       properties:
         isVegetarian:

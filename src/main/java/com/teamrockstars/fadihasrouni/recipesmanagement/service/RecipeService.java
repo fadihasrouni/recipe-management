@@ -2,6 +2,8 @@ package com.teamrockstars.fadihasrouni.recipesmanagement.service;
 
 import com.teamrockstars.fadihasrouni.recipesmanagement.config.RecipeSpecification;
 import com.teamrockstars.fadihasrouni.recipesmanagement.enums.DietaryType;
+import com.teamrockstars.fadihasrouni.recipesmanagement.enums.IngredientTypeLabel;
+import com.teamrockstars.fadihasrouni.recipesmanagement.exception.customException.RecipeManagementException;
 import com.teamrockstars.fadihasrouni.recipesmanagement.exception.customException.ResourceNotFoundException;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.*;
 import com.teamrockstars.fadihasrouni.recipesmanagement.repository.RecipeIngredientRepository;
@@ -84,6 +86,11 @@ public class RecipeService {
         recipe.setRecipeIngredients(
                 recipeIngredientRepository.saveAll(populateRecipeIngredientList(recipeRequest.getIngredients(), recipe.getId())));
 
+        // Final validation
+        if (!validateRecipeDietaryType(recipe)) {
+            throw new RecipeManagementException("The dietary type doesn't match the ingredients");
+        }
+
         return convertToRecipeResponse(recipe);
     }
 
@@ -113,6 +120,11 @@ public class RecipeService {
         recipe.setRecipeIngredients(
                 recipeIngredientRepository.saveAll(populateRecipeIngredientList(recipeRequest.getIngredients(), recipe.getId())));
 
+        // Final validation
+        if (!validateRecipeDietaryType(recipe)) {
+            throw new RecipeManagementException("The dietary type doesn't match the ingredients");
+        }
+
         return convertToRecipeResponse(recipe);
     }
 
@@ -135,6 +147,38 @@ public class RecipeService {
     public VegetarianDishResponse isVegetarianDish(Long id) {
         Recipe recipe = findRecipeByIdOrThrow(id);
         return convertToVegetarianDishResponse(recipe.isVegetarianDish());
+    }
+
+    /**
+     * Validates if the dietary type matches the ingredients
+     *
+     * @param recipe
+     * @return
+     */
+    private boolean validateRecipeDietaryType(Recipe recipe) {
+        // if true all is good
+        boolean result = true;
+
+        DietaryType dietaryType = recipe.getDietaryType();
+
+        for (RecipeIngredient recipeIngredient : recipe.getRecipeIngredients()) {
+            // Validate if this is a vegetarian dish based on ingredients
+
+            IngredientType type = recipeIngredient.getIngredient().getType();
+
+            if ((dietaryType == DietaryType.VEGETARIAN || dietaryType == DietaryType.VEGAN)
+                    && type != null
+                    && (recipeIngredient.getIngredient().getType().getName().equals(IngredientTypeLabel.MEAT.getName())
+                    || recipeIngredient.getIngredient().getType().getName().equals(IngredientTypeLabel.SEA_FOOD.getName()))
+            ) {
+                // This is not a vegetarian dish
+                return false;
+            }
+        }
+
+        // TODO: To support control over other dietary and ingredient types
+
+        return result;
     }
 
     /**

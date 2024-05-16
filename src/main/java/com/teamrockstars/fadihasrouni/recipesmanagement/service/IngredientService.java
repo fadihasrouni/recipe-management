@@ -1,9 +1,11 @@
 package com.teamrockstars.fadihasrouni.recipesmanagement.service;
 
+import com.teamrockstars.fadihasrouni.recipesmanagement.enums.IngredientTypeLabel;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.Ingredient;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.IngredientRequest;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.SimpleIngredientResponse;
 import com.teamrockstars.fadihasrouni.recipesmanagement.repository.IngredientRepository;
+import com.teamrockstars.fadihasrouni.recipesmanagement.repository.IngredientTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -16,9 +18,12 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
 
+    private final IngredientTypeRepository ingredientTypeRepository;
+
     @Autowired
-    public IngredientService(IngredientRepository ingredientRepository) {
+    public IngredientService(IngredientRepository ingredientRepository, IngredientTypeRepository ingredientTypeRepository) {
         this.ingredientRepository = ingredientRepository;
+        this.ingredientTypeRepository = ingredientTypeRepository;
     }
 
     /**
@@ -40,6 +45,14 @@ public class IngredientService {
     public SimpleIngredientResponse createIngredient(IngredientRequest ingredientRequest) {
         Ingredient ingredient = new Ingredient();
         ingredient.setName(ingredientRequest.getName());
+
+        // Add if the type is an animal to control vegetarian recipes
+        // TODO: Populate other types for more control
+        if(ingredientRequest.getContainsMeat() != null && ingredientRequest.getContainsMeat()) {
+            ingredient.setType(ingredientTypeRepository.findByName(IngredientTypeLabel.MEAT.getName()).orElse(null));
+        } else if(ingredientRequest.getContainsSeaFood() != null && ingredientRequest.getContainsSeaFood()) {
+            ingredient.setType(ingredientTypeRepository.findByName(IngredientTypeLabel.SEA_FOOD.getName()).orElse(null));
+        }
 
         try {
             ingredient = ingredientRepository.save(ingredient);

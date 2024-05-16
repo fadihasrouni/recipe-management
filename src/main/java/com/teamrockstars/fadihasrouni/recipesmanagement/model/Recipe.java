@@ -46,4 +46,8 @@ public class Recipe {
     @JsonIgnore
     @UpdateTimestamp
     private Date updatedAt;
+
+    public boolean isVegetarianDish() {
+        return dietaryType == DietaryType.VEGETARIAN || dietaryType == DietaryType.VEGAN;
+    }
 }

@@ -3,9 +3,8 @@ package com.teamrockstars.fadihasrouni.recipesmanagement.controller;
 import com.teamrockstars.fadihasrouni.recipesmanagement.api.RecipesApi;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.RecipeRequest;
 import com.teamrockstars.fadihasrouni.recipesmanagement.model.RecipeResponse;
+import com.teamrockstars.fadihasrouni.recipesmanagement.model.VegetarianDishResponse;
 import com.teamrockstars.fadihasrouni.recipesmanagement.service.RecipeService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -58,5 +57,10 @@ public class RecipeController implements RecipesApi {
     public ResponseEntity<Void> deleteRecipeById(Long id) {
         recipeService.deleteRecipe(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ResponseEntity<VegetarianDishResponse> isVegetarian(Long id) {
+        return ResponseEntity.ok(recipeService.isVegetarianDish(id));
     }
 }

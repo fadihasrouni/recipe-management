@@ -127,6 +127,17 @@ public class RecipeService {
     }
 
     /**
+     * Indicates whether a dish is vegetarian or not
+     *
+     * @param id
+     * @return
+     */
+    public VegetarianDishResponse isVegetarianDish(Long id) {
+        Recipe recipe = findRecipeByIdOrThrow(id);
+        return convertToVegetarianDishResponse(recipe.isVegetarianDish());
+    }
+
+    /**
      * Fetch a specific recipe from the database, if not found it will throw a resource not found exception
      *
      * @param id
@@ -136,7 +147,7 @@ public class RecipeService {
         return recipeRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Recipe with id " + id + " not found");
-                    return  new ResourceNotFoundException("Couldn't find any recipe with the given id");
+                    return new ResourceNotFoundException("Couldn't find any recipe with the given id");
                 });
     }
 
@@ -249,5 +260,20 @@ public class RecipeService {
         return recipes.stream()
                 .map(this::convertToRecipeResponse)
                 .toList();
+    }
+
+    /**
+     * Converts the database result to a proper response
+     *
+     * @param isVegetarianDish
+     * @return
+     */
+    private VegetarianDishResponse convertToVegetarianDishResponse(boolean isVegetarianDish) {
+        VegetarianDishResponse response = new VegetarianDishResponse();
+
+        response.isVegetarian(isVegetarianDish);
+        response.setMessage("Vegan dishes are also considered vegetarian");
+
+        return response;
     }
 }

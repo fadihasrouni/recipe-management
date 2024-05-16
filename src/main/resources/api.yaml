@@ -142,6 +142,27 @@ paths:
           description: Recipe deleted.
         '404':
           description: The recipe was not found for the specified id
+  /recipes/{id}/vegetarian:
+    get:
+      summary: Check if the dish is vegetarian
+      operationId: isVegetarian
+      tags:
+        - recipe
+      parameters:
+        - name: id
+          in: path
+          description: id of the recipe
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Returns if the recipe is vegetarian.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VegetarianDishResponse"
   /ingredients:
     get:
       summary: Gets all the the ingredients
@@ -276,4 +297,10 @@ components:
     IngredientRequest:
       properties:
         name:
+          type: string
+    VegetarianDishResponse:
+      properties:
+        isVegetarian:
+          type: boolean
+        message:
           type: string

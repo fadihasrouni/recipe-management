@@ -185,6 +185,29 @@ public class RecipeServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> recipeService.deleteRecipe(1L));
     }
 
+    @Test
+    void testIsVegetarianDish() {
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.ofNullable(recipe));
+
+        VegetarianDishResponse response = recipeService.isVegetarianDish(1L);
+
+        assertEquals(true, response.getIsVegetarian());
+
+        recipe.setDietaryType(DietaryType.VEGETARIAN);
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.ofNullable(recipe));
+
+        response = recipeService.isVegetarianDish(1L);
+
+        assertEquals(true, response.getIsVegetarian());
+
+        recipe.setDietaryType(DietaryType.NON_VEGETARIAN);
+        Mockito.when(recipeRepository.findById(anyLong())).thenReturn(Optional.ofNullable(recipe));
+
+        response = recipeService.isVegetarianDish(1L);
+
+        assertEquals(false, response.getIsVegetarian());
+    }
+
     /**
      * Asserts that the recipe model field values and correctly mapped to the recipe response
      *
